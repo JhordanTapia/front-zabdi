@@ -1,0 +1,35 @@
+# Dependencias de Node
+node_modules/
+
+# Caché de Angular y compilación
+.angular/
+dist/
+/tmp/
+/out/
+
+# Compilación de Rust / Tauri (Muy pesado, jamás subir)
+src-tauri/target/
+
+# Variables de entorno y llaves secretas
+.env
+src/environments/environment.prod.ts
+
+# Logs de error de npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Configuración del editor e IDEs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Archivos del sistema operativo
+Thumbs.db
+.DS_Store

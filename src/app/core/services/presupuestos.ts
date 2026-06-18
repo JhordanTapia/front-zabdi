@@ -10,14 +10,25 @@ export class PresupuestosService {
 
   constructor(private http: HttpClient) { }
 
-  procesarExcel(archivo: File, token: string): Observable<any> {
+  // 1. Fase de Análisis (Solo IA)
+  analizarExcel(archivo: File, token: string): Observable<any> {
     const formData = new FormData();
-    formData.append('archivo', archivo); // 'archivo' debe ser igual que en el main.py
+    formData.append('archivo', archivo);
 
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
 
-    return this.http.post(`${this.apiUrl}/presupuestos/procesar-excel`, formData, { headers });
+    return this.http.post(`${this.apiUrl}/presupuestos/analizar-excel`, formData, { headers });
+  }
+
+  // 2. Fase de Guardado Confirmado
+  guardarConfirmado(payload: any, token: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.apiUrl}/presupuestos/guardar-confirmado`, payload, { headers });
   }
 }

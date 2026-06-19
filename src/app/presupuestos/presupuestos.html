@@ -1,0 +1,377 @@
+<div class="min-h-screen bg-slate-900 flex text-white font-sans overflow-hidden">
+
+    <aside class="w-72 bg-slate-800/80 border-r border-slate-700/50 p-6 flex flex-col backdrop-blur-xl z-10">
+        <div class="flex items-center gap-3 mb-10">
+            <div
+                class="w-10 h-10 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+            </div>
+            <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+                ASTILLERO NAVAL</h2>
+        </div>
+
+        <nav class="flex-1 space-y-3">
+            <a routerLink="/dashboard" routerLinkActive="bg-blue-600/20 text-blue-400 border-blue-500/30"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent font-semibold transition-all text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                    </path>
+                </svg>
+                Panel Principal
+            </a>
+            <a routerLink="/presupuestos" routerLinkActive="bg-blue-600/20 text-blue-400 border-blue-500/30"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl border border-transparent font-semibold transition-all text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
+                </svg>
+                Presupuestos
+            </a>
+        </nav>
+
+        <button (click)="cerrarSesion()"
+            class="mt-auto flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors font-medium">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                </path>
+            </svg>
+            Cerrar Sesión
+        </button>
+    </aside>
+
+    <main class="flex-1 p-10 relative overflow-y-auto">
+        <div
+            class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none">
+        </div>
+
+        <header class="flex justify-between items-center mb-10 relative z-10">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight">Historial de Presupuestos</h1>
+                <p class="text-slate-400 mt-1">Gestión de cotizaciones de Core Metalmecánica S.A.C.</p>
+            </div>
+            <button routerLink="/dashboard"
+                class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-6 rounded-xl shadow-[0_0_15px_rgba(37,99,235,0.4)] transition-all flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Nuevo Presupuesto
+            </button>
+        </header>
+
+        <div class="mb-6 relative z-10">
+            <div class="mb-6 relative z-10">
+                <div class="relative w-1/3 min-w-[300px]">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input type="text" [(ngModel)]="searchTerm"
+                        placeholder="Buscar por embarcación, astillero, estado o Nº..."
+                        class="w-full bg-slate-800/60 border border-slate-700/50 text-white text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block pl-11 p-3 placeholder-slate-500 transition-all outline-none shadow-lg">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800/60 rounded-2xl border border-slate-700/50 shadow-xl relative z-10 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr
+                            class="bg-slate-900/50 border-b border-slate-700/50 text-slate-400 text-sm uppercase tracking-wider">
+                            <th class="p-5 font-semibold">Nº Cotización</th>
+                            <th class="p-5 font-semibold text-blue-300">Astillero</th>
+                            <th class="p-5 font-semibold">Embarcación</th>
+                            <th class="p-5 font-semibold">Fecha</th>
+                            <th class="p-5 font-semibold">Estado</th>
+                            <th class="p-5 font-semibold text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700/50">
+
+                        <tr *ngIf="presupuestosFiltrados.length === 0">
+                            <td colspan="5" class="p-10 text-center text-slate-500">
+                                No se encontraron presupuestos que coincidan con la búsqueda.
+                            </td>
+                        </tr>
+
+                        <tr *ngFor="let p of presupuestosFiltrados" class="hover:bg-slate-700/20 transition-colors">
+                            <td class="p-5 font-medium text-cyan-400">{{ p.numero_cotizacion || 'S/N' }}</td>
+
+                            <td class="p-5 text-slate-300 font-semibold truncate max-w-[200px]"
+                                title="{{ p.astillero }}">
+                                {{ p.astillero }}
+                            </td>
+
+                            <td class="p-5 font-semibold">{{ p.embarcacion }}</td>
+                            <td class="p-5 text-slate-300">{{ p.fecha }}</td>
+                            <td class="p-5">
+                                <span
+                                    class="px-3 py-1 text-xs font-bold rounded-full bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
+                                    {{ p.estado }}
+                                </span>
+                            </td>
+                            <td class="p-5">
+                                <div class="flex items-center justify-end gap-3">
+                                    <button (click)="abrirVer(p)"
+                                        class="text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 p-2 rounded-lg transition-colors"
+                                        title="Ver Detalle">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                    <button (click)="abrirEditar(p)"
+                                        class="text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 p-2 rounded-lg transition-colors"
+                                        title="Editar Presupuesto">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                    <button (click)="abrirEstado(p)"
+                                        class="text-orange-400 hover:text-orange-300 bg-orange-500/10 hover:bg-orange-500/20 p-2 rounded-lg transition-colors"
+                                        title="Cambiar Estado">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div *ngIf="showModalVer" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-slate-800 border border-slate-700 rounded-2xl p-8 w-full max-w-4xl shadow-2xl max-h-[90vh] flex flex-col">
+
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-blue-400">Detalle del Presupuesto</h3>
+                    <p class="text-slate-400 mt-1">Embarcación: <span class="text-white font-bold">{{
+                            presupuestoSeleccionado?.embarcacion }}</span> | Nº: <span class="text-white">{{
+                            presupuestoSeleccionado?.numero_cotizacion || 'S/N' }}</span></p>
+                </div>
+                <span
+                    class="px-3 py-1 text-xs font-bold rounded-full bg-slate-700 text-slate-300 border border-slate-600">
+                    {{ presupuestoSeleccionado?.estado }}
+                </span>
+            </div>
+
+            <div *ngIf="cargandoDetalle" class="flex justify-center items-center p-10">
+                <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+                <span class="ml-3 text-slate-400">Cargando ítems desde la base de datos...</span>
+            </div>
+
+            <div *ngIf="!cargandoDetalle" class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr
+                            class="bg-slate-900 sticky top-0 z-10 border-b border-slate-700 text-slate-400 uppercase tracking-wider text-xs">
+                            <th class="p-4 font-semibold w-1/2">Descripción</th>
+                            <th class="p-4 font-semibold text-center">Cant.</th>
+                            <th class="p-4 font-semibold text-right">P. Unitario</th>
+                            <th class="p-4 font-semibold text-right">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700/50">
+                        <tr *ngIf="itemsDetalle.length === 0">
+                            <td colspan="4" class="p-8 text-center text-slate-500">No hay ítems registrados para este
+                                presupuesto.</td>
+                        </tr>
+                        <tr *ngFor="let item of itemsDetalle" class="hover:bg-slate-700/30 transition-colors">
+                            <td class="p-4 text-slate-300 font-medium">{{ item.descripcion }}</td>
+                            <td class="p-4 text-center text-cyan-400 font-bold">{{ item.cantidad }}</td>
+                            <td class="p-4 text-right text-slate-400">{{
+                                obtenerSimboloMoneda(presupuestoSeleccionado?.moneda) }} {{ item.precio_unitario |
+                                number:'1.2-2' }}</td>
+                            <td class="p-4 text-right text-emerald-400 font-bold">{{
+                                obtenerSimboloMoneda(presupuestoSeleccionado?.moneda) }} {{ item.subtotal |
+                                number:'1.2-2' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div *ngIf="!cargandoDetalle" class="mt-6 pt-6 border-t border-slate-700 flex justify-between items-center">
+                <div class="text-slate-400">
+                    Total de ítems: <span class="text-white font-bold">{{ itemsDetalle.length }}</span>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-slate-400 uppercase tracking-wide">Total Estimado</p>
+                    <p class="text-3xl font-extrabold text-blue-400">{{
+                        obtenerSimboloMoneda(presupuestoSeleccionado?.moneda) }} {{ totalDetalle | number:'1.2-2' }}</p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button (click)="cerrarModales()"
+                    class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2.5 px-6 rounded-xl transition-colors shadow-lg">Cerrar
+                    Detalle</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="showModalEditar"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-slate-800 border border-slate-700 rounded-2xl p-8 w-full max-w-5xl shadow-2xl max-h-[90vh] flex flex-col">
+
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold text-emerald-400">Editar Presupuesto</h3>
+                    <p class="text-slate-400 mt-1">Modificando datos de: <span class="text-white font-bold">{{
+                            presupuestoSeleccionado?.embarcacion }}</span></p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <label class="text-sm font-medium text-slate-400 whitespace-nowrap">Nº Cotización:</label>
+                    <input type="text" [(ngModel)]="presupuestoSeleccionado.numero_cotizacion"
+                        class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-white outline-none focus:border-emerald-500 w-32">
+                </div>
+            </div>
+
+            <div *ngIf="cargandoEdicion" class="flex justify-center items-center p-10">
+                <svg class="animate-spin h-8 w-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                </svg>
+            </div>
+
+            <div *ngIf="!cargandoEdicion" class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr
+                            class="bg-slate-900 sticky top-0 z-10 border-b border-slate-700 text-slate-400 uppercase tracking-wider text-xs">
+                            <th class="p-3 font-semibold w-6/12">Descripción del Trabajo</th>
+                            <th class="p-3 font-semibold text-center w-1/12">Cant.</th>
+                            <th class="p-3 font-semibold text-right w-2/12">P. Unitario</th>
+                            <th class="p-3 font-semibold text-right w-2/12">Subtotal</th>
+                            <th class="p-3 font-semibold text-center w-1/12"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700/50">
+                        <tr *ngFor="let item of itemsEdicion; let i = index"
+                            class="hover:bg-slate-700/30 transition-colors">
+                            <td class="p-2">
+                                <textarea [(ngModel)]="item.descripcion" rows="2"
+                                    class="w-full bg-slate-900/50 border border-transparent hover:border-slate-600 focus:border-emerald-500 rounded p-2 text-slate-300 resize-none outline-none transition-colors"></textarea>
+                            </td>
+                            <td class="p-2">
+                                <input type="number" [(ngModel)]="item.cantidad"
+                                    class="w-full bg-slate-900/50 border border-transparent hover:border-slate-600 focus:border-emerald-500 rounded p-2 text-center text-cyan-400 font-bold outline-none transition-colors">
+                            </td>
+                            <td class="p-2 relative">
+                                <span class="absolute left-4 top-4 text-slate-500">{{
+                                    obtenerSimboloMoneda(presupuestoSeleccionado?.moneda) }}</span>
+                                <input type="number" [(ngModel)]="item.precio_unitario"
+                                    class="w-full bg-slate-900/50 border border-transparent hover:border-slate-600 focus:border-emerald-500 rounded p-2 pl-8 text-right text-slate-300 outline-none transition-colors">
+                            </td>
+                            <td class="p-2 text-right text-emerald-400 font-bold">
+                                {{ obtenerSimboloMoneda(presupuestoSeleccionado?.moneda) }} {{ (item.cantidad *
+                                item.precio_unitario) | number:'1.2-2' }}
+                            </td>
+
+                            <td class="p-2 text-center">
+                                <button (click)="eliminarItemEdicion(i)"
+                                    class="text-red-400 hover:text-red-300 hover:bg-red-500/20 p-2 rounded-lg transition-colors"
+                                    title="Eliminar ítem">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div *ngIf="!cargandoEdicion" class="mt-6 pt-6 border-t border-slate-700 flex justify-between items-center">
+                <div class="text-slate-400">
+                    Total de ítems: <span class="text-white font-bold">{{ itemsEdicion.length }}</span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="text-right">
+                        <p class="text-sm text-slate-400 uppercase tracking-wide">Nuevo Total</p>
+                        <p class="text-2xl font-extrabold text-emerald-400">{{
+                            obtenerSimboloMoneda(presupuestoSeleccionado?.moneda) }} {{ totalEdicion | number:'1.2-2' }}
+                        </p>
+                    </div>
+                    <div class="flex gap-3 border-l border-slate-700 pl-6">
+                        <button (click)="cerrarModales()"
+                            class="text-slate-400 hover:text-white px-4 py-2 transition-colors font-semibold">Cancelar</button>
+                        <button (click)="guardarEdicion()"
+                            class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)]">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div *ngIf="showModalEstado"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-8 w-full max-w-sm shadow-2xl">
+            <h3 class="text-2xl font-bold mb-4 text-orange-400">Cambiar Estado</h3>
+            <p class="text-slate-400 mb-6">Estado actual: <span class="text-white font-bold">{{
+                    presupuestoSeleccionado?.estado }}</span></p>
+
+            <div class="relative mb-8">
+                <select [(ngModel)]="nuevoEstadoId"
+                    style="background-image: none !important; -webkit-appearance: none !important; appearance: none !important;"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 pr-16 text-white outline-none focus:border-orange-500 cursor-pointer">
+                    <option [value]="1">Borrador</option>
+                    <option [value]="2">En Revisión</option>
+                    <option [value]="3">Confirmado</option>
+                    <option [value]="4">Rechazado</option>
+                    <option [value]="5">Anulado</option>
+                </select>
+
+                <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button (click)="cerrarModales()"
+                    class="text-slate-400 hover:text-white px-4 py-2 transition-colors font-semibold">Cancelar</button>
+                <button (click)="guardarEstado()"
+                    class="bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 px-6 rounded-xl transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:shadow-[0_0_20px_rgba(249,115,22,0.5)]">
+                    Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

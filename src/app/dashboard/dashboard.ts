@@ -3,11 +3,12 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // <-- ¡SUPER IMPORTANTE para ngModel!
 import { PresupuestosService } from '../core/services/presupuestos';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule], // <-- Lo agregamos aquí
+  imports: [CommonModule, FormsModule, RouterModule], // <-- Lo agregamos aquí
   templateUrl: './dashboard.html',
 })
 export class DashboardComponent implements OnInit {
@@ -21,6 +22,7 @@ export class DashboardComponent implements OnInit {
   // --- DATOS ---
   datosExtraidos: any = null;
   passwordConfirmacion = '';
+  listaPresupuestos: any[] = []; // <-- NUEVO: Aquí guardamos las cabeceras de PostgreSQL
 
   constructor(
     private router: Router, 
@@ -31,7 +33,25 @@ export class DashboardComponent implements OnInit {
     const token = localStorage.getItem('token_naval');
     if (!token) {
       this.router.navigate(['/']);
+    } else {
+      this.cargarPresupuestos(); // <-- NUEVO: Cargamos la tabla apenas entra el operador
     }
+  }
+
+  // NUEVO: Método para traer la data real de la BD al dashboard
+  cargarPresupuestos() {
+    const token = localStorage.getItem('token_naval') || '';
+    
+    this.presupuestosService.obtenerListaPresupuestos(token).subscribe({
+      next: (respuesta: any) => {
+        if (respuesta.status === 'success') {
+          this.listaPresupuestos = respuesta.data; // Inyectamos el arreglo a la vista
+        }
+      },
+      error: (err: any) => {
+        console.error('Error cargando presupuestos de la BD:', err);
+      }
+    });
   }
 
   // 1. Cuando el usuario sube el Excel
@@ -51,7 +71,7 @@ export class DashboardComponent implements OnInit {
           // Reseteamos el input file para que permita subir el mismo archivo si se cancela
           event.target.value = '';
         },
-        error: (err) => {
+        error: (err: any) => { // <-- Corregido con tipo any para evitar errores en Tauri
           this.procesando = false;
           console.error('Error:', err);
           alert('Error analizando el documento. Revisa la consola.');
@@ -97,9 +117,9 @@ export class DashboardComponent implements OnInit {
       next: (res: any) => {
         alert('¡ÉXITO! 🚀\n' + res.mensaje);
         this.cerrarModales();
-        // Aquí puedes actualizar tu contador de presupuestos activos
+        this.cargarPresupuestos(); // <-- NUEVO: Refrescamos la tabla automáticamente tras guardar
       },
-      error: (err) => {
+      error: (err: any) => { // <-- Corregido con tipo any para evitar errores en Tauri
         console.error('Error al guardar:', err);
         // Si es 401, es contraseña incorrecta
         if (err.status === 401) {

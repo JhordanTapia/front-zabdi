@@ -38,6 +38,11 @@ export class PresupuestosComponent implements OnInit {
   };
   itemsNuevo: any[] = [];
 
+  // --- CONTROL DE REGULARIZACIÓN ---
+  showModalRegularizar: boolean = false;
+  proveedoresPendientes: any[] = [];
+  cargandoPendientes: boolean = false;
+
   constructor(
     private presupuestosService: PresupuestosService,
     private router: Router
@@ -235,7 +240,8 @@ export class PresupuestosComponent implements OnInit {
     this.showModalEditar = false;
     this.showModalEstado = false;
     this.showModalEliminar = false; 
-    this.showModalNuevo = false; // <-- Agregamos el nuevo modal aquí
+    this.showModalNuevo = false; 
+    this.showModalRegularizar = false; // <-- Cerramos el modal de regularización también
     this.itemAEliminarIndex = null; 
     this.presupuestoSeleccionado = null;
     this.itemsDetalle = []; 
@@ -378,4 +384,107 @@ export class PresupuestosComponent implements OnInit {
     }
   }
 
+  // ==========================================
+  // LÓGICA PARA REGULARIZAR CLIENTES / ASTILLEROS
+  // ==========================================
+  abrirModalRegularizar() {
+    this.showModalRegularizar = true;
+    this.cargarPendientes();
+  }
+
+  cerrarModalRegularizar() {
+    this.showModalRegularizar = false;
+    this.proveedoresPendientes = [];
+  }
+
+  cargarPendientes() {
+    this.cargandoPendientes = true;
+    const token = localStorage.getItem('token_naval') || '';
+    
+    this.presupuestosService.obtenerProveedoresPendientes(token).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          // Mapeamos agregando campos temporales vacíos para los inputs de la tabla
+          this.proveedoresPendientes = res.data.map((p: any) => ({
+            ...p,
+            inputRuc: '',
+            inputRazonSocial: '',
+            guardando: false,
+            buscandoRuc: false // <-- AÑADIMOS ESTA BANDERA PARA LA LUPA
+          }));
+        }
+        this.cargandoPendientes = false;
+      },
+      error: (err: any) => {
+        console.error('Error cargando clientes pendientes:', err);
+        this.cargandoPendientes = false;
+      }
+    });
+  }
+
+  buscarRucEnSunat(proveedor: any) {
+    if (!proveedor.inputRuc || proveedor.inputRuc.length !== 11) {
+      alert('El RUC debe tener exactamente 11 dígitos.');
+      return;
+    }
+
+    proveedor.buscandoRuc = true;
+    const token = localStorage.getItem('token_naval') || '';
+
+    this.presupuestosService.consultarRucSunat(proveedor.inputRuc, token).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success' && res.data) {
+          proveedor.inputRazonSocial = res.data.razon_social || res.data.nombre || res.data.razonSocial;
+          // Guardamos la data extra silenciosamente en el objeto de la fila
+          proveedor.inputDireccion = res.data.direccion;
+          proveedor.inputDistrito = res.data.distrito;
+          proveedor.inputProvincia = res.data.provincia;
+          proveedor.inputDepartamento = res.data.departamento;
+        } else {
+          alert(res.detail || 'No se encontró Razón Social para este RUC en la SUNAT.');
+          proveedor.inputRazonSocial = '';
+        }
+        proveedor.buscandoRuc = false;
+      },
+      error: (err: any) => {
+        console.error('Error consultando SUNAT:', err);
+        alert('Hubo un error al conectar con la API de SUNAT.');
+        proveedor.buscandoRuc = false;
+      }
+    });
+  }
+
+  guardarRegularizacion(proveedor: any) {
+    if (!proveedor.inputRuc || !proveedor.inputRazonSocial) {
+      alert('Debes ingresar el RUC de 11 dígitos y la Razón Social.');
+      return;
+    }
+
+    proveedor.guardando = true;
+    const token = localStorage.getItem('token_naval') || '';
+    const payload = {
+      ruc: proveedor.inputRuc,
+      razon_social: proveedor.inputRazonSocial,
+      direccion: proveedor.inputDireccion || '',
+      distrito: proveedor.inputDistrito || '',
+      provincia: proveedor.inputProvincia || '',
+      departamento: proveedor.inputDepartamento || ''
+    };
+
+    this.presupuestosService.regularizarProveedor(proveedor.id, payload, token).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          this.mostrarToastExito('¡Cliente regularizado correctamente!');
+          this.cargarPendientes(); 
+          this.cargarPresupuestos(); 
+        }
+        proveedor.guardando = false;
+      },
+      error: (err: any) => {
+        console.error('Error al regularizar:', err);
+        alert(err.error?.detail || 'Ocurrió un error al guardar en la base de datos.');
+        proveedor.guardando = false;
+      }
+    });
+  }
 }

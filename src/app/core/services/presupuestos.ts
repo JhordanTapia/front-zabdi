@@ -59,7 +59,7 @@ export class PresupuestosService {
     return this.http.put(`${this.apiUrl}/presupuestos/${id}/actualizar`, payload, { headers });
   }
 
-  // 6. Actualizar solo el estado del presupuesto
+ // 6. Actualizar solo el estado del presupuesto
   actualizarEstado(id: number, id_estado: number, token: string): Observable<any> {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
@@ -67,5 +67,30 @@ export class PresupuestosService {
     });
     // Mandamos el JSON que espera Python: { id_estado: X }
     return this.http.put(`${this.apiUrl}/presupuestos/${id}/estado`, { id_estado }, { headers });
+  }
+
+  // 7. Traer proveedores pendientes (sin RUC)
+  obtenerProveedoresPendientes(token: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.get(`${this.apiUrl}/proveedores/pendientes`, { headers });
+  }
+
+ // 8. Regularizar proveedor (Unir RUC y Razón Social al Apodo)
+  regularizarProveedor(id: number, payload: any, token: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+    return this.http.put(`${this.apiUrl}/proveedores/${id}/regularizar`, payload, { headers });
+  }
+
+  // 9. Consultar RUC a través de nuestro Backend (Seguro)
+  consultarRucSunat(ruc: string, token: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.get(`${this.apiUrl}/sunat/consultar-ruc/${ruc}`, { headers });
   }
 }

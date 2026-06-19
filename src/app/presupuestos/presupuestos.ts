@@ -22,6 +22,21 @@ export class PresupuestosComponent implements OnInit {
   itemsEdicion: any[] = [];
   cargandoEdicion: boolean = false;
   nuevoEstadoId: number = 1;
+  showModalEliminar: boolean = false;
+  itemAEliminarIndex: number | null = null;
+  showToastExito: boolean = false;
+  mensajeToast: string = '';
+
+  // --- CONTROL DE CREACIÓN MANUAL ---
+  showModalNuevo: boolean = false;
+  cargandoNuevo: boolean = false;
+  nuevoPresupuesto = {
+    astillero: '',
+    embarcacion: '',
+    numero_cotizacion: '',
+    moneda: 'PEN'
+  };
+  itemsNuevo: any[] = [];
 
   constructor(
     private presupuestosService: PresupuestosService,
@@ -37,6 +52,23 @@ export class PresupuestosComponent implements OnInit {
     }
   }
 
+  abrirModalEliminar(index: number) {
+    this.itemAEliminarIndex = index;
+    this.showModalEliminar = true;
+  }
+
+  confirmarEliminacion() {
+    if (this.itemAEliminarIndex !== null) {
+      this.itemsEdicion.splice(this.itemAEliminarIndex, 1);
+      this.cerrarModalEliminar();
+    }
+  }
+
+  cerrarModalEliminar() {
+    this.showModalEliminar = false;
+    this.itemAEliminarIndex = null;
+  }
+  
   cargarPresupuestos() {
     const token = localStorage.getItem('token_naval') || '';
 
@@ -51,7 +83,7 @@ export class PresupuestosComponent implements OnInit {
       }
     });
   }
-  
+
   eliminarItemEdicion(index: number) {
       if(confirm('¿Seguro que quieres eliminar este ítem del presupuesto?')) {
         this.itemsEdicion.splice(index, 1);
@@ -141,7 +173,7 @@ export class PresupuestosComponent implements OnInit {
 
     this.presupuestosService.actualizarPresupuesto(this.presupuestoSeleccionado.id, payload, token).subscribe({
       next: (res: any) => {
-        alert('¡Cambios guardados con éxito!');
+        this.mostrarToastExito('¡Cambios guardados con éxito!'); // <-- EL ELEGANTE
         this.cerrarModales();
         this.cargarPresupuestos(); // Refrescamos la tabla
       },
@@ -187,13 +219,26 @@ export class PresupuestosComponent implements OnInit {
       }
     });
   }
+  
+  mostrarToastExito(mensaje: string) {
+    this.mensajeToast = mensaje;
+    this.showToastExito = true;
+    
+    // El setTimeout hace que a los 3 segundos (3000ms) se cierre solo
+    setTimeout(() => {
+      this.showToastExito = false;
+    }, 3000);
+  }
 
   cerrarModales() {
     this.showModalVer = false;
     this.showModalEditar = false;
     this.showModalEstado = false;
+    this.showModalEliminar = false; 
+    this.showModalNuevo = false; // <-- Agregamos el nuevo modal aquí
+    this.itemAEliminarIndex = null; 
     this.presupuestoSeleccionado = null;
-    this.itemsDetalle = []; // Limpiamos al cerrar
+    this.itemsDetalle = []; 
   }
   itemsDetalle: any[] = [];
   totalDetalle: number = 0;
@@ -209,4 +254,128 @@ export class PresupuestosComponent implements OnInit {
     localStorage.removeItem('token_naval');
     this.router.navigate(['/']);
   }
+
+// ==========================================
+  // LÓGICA PARA CREAR PRESUPUESTO MANUAL
+  // ==========================================
+  abrirModalNuevo() {
+    // Reseteamos el formulario al abrir para que esté limpio
+    this.nuevoPresupuesto = { astillero: '', embarcacion: '', numero_cotizacion: '', moneda: 'PEN' };
+    this.itemsNuevo = [
+      { descripcion: '', cantidad: 1, precio_unitario: 0.00 } // Empezamos con 1 fila vacía por defecto
+    ];
+    this.showModalNuevo = true;
+  }
+
+  agregarItemNuevo() {
+    this.itemsNuevo.push({ descripcion: '', cantidad: 1, precio_unitario: 0.00 });
+    setTimeout(() => {
+      const nuevoIndice = this.itemsNuevo.length - 1;
+      const nuevoElemento = document.getElementById('desc_input_' + nuevoIndice);
+      if (nuevoElemento) {
+        nuevoElemento.focus();
+      }
+    }, 0);
+  }
+
+  eliminarItemNuevo(index: number) {
+    this.itemsNuevo.splice(index, 1);
+    // Si borra absolutamente todas las filas, le dejamos una vacía para que no se quede sin tabla
+    if (this.itemsNuevo.length === 0) {
+      this.agregarItemNuevo();
+    }
+  }
+
+  // Calcula el subtotal en tiempo real
+  get totalNuevo() {
+    return this.itemsNuevo.reduce((acc, item) => acc + (Number(item.cantidad) * Number(item.precio_unitario)), 0);
+  }
+
+  async guardarNuevoPresupuesto() {
+    if (!this.nuevoPresupuesto.embarcacion.trim()) {
+      alert('Debes ingresar el nombre de la embarcación o proyecto.');
+      return;
+    }
+
+    this.cargandoNuevo = true;
+    const token = localStorage.getItem('token_naval') || '';
+
+    // Armamos el paquete de datos exactamente como lo pide el BaseModel de Python
+    const payload = {
+      astillero: this.nuevoPresupuesto.astillero, // <-- SE LO MANDAMOS A PYTHON
+      embarcacion: this.nuevoPresupuesto.embarcacion,
+      numero_cotizacion: this.nuevoPresupuesto.numero_cotizacion,
+      moneda: this.nuevoPresupuesto.moneda,
+      items: this.itemsNuevo.map(i => ({
+        detalle_actividad: i.descripcion,
+        cantidad: Number(i.cantidad) || 0,
+        precio_unitario: Number(i.precio_unitario) || 0
+      }))
+    };
+
+    try {
+      const response = await fetch('http://localhost:8000/api/presupuestos/crear-manual', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      this.cargandoNuevo = false;
+
+      if (response.ok && data.status === 'success') {
+        this.mostrarToastExito('¡Presupuesto creado con éxito!');
+        this.cerrarModales();
+        this.cargarPresupuestos(); // Refrescamos la tabla para ver el nuevo registro
+      } else {
+        alert(data.detail || 'Ocurrió un error al guardar en la base de datos.');
+      }
+    } catch (error) {
+      this.cargandoNuevo = false;
+      console.error('Error al crear:', error);
+      alert('Error de conexión con el servidor. Verifica que el backend esté encendido.');
+    }
+  }
+
+// --- FUNCIÓN PARA EXPORTAR EXCEL ---
+  async exportarExcel(presupuesto: any) {
+    const token = localStorage.getItem('token_naval') || '';
+    
+    // Usamos tu Toast nuevo para avisar que está cargando
+    this.mostrarToastExito('Generando documento Excel...');
+
+    try {
+      // Como Angular + Tauri requieren la URL completa a tu backend, usa fetch para no complicar el Service
+      // Asegúrate de cambiar 'http://localhost:8000' por la URL real de tu backend si es distinta
+      const urlBackend = `http://localhost:8000/api/presupuestos/${presupuesto.id}/exportar/excel`;
+      
+      const response = await fetch(urlBackend, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Fallo la descarga del Excel');
+
+      // Convertimos la respuesta en un archivo Blob y forzamos la descarga en el navegador/Tauri
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Cotizacion_${presupuesto.numero_cotizacion || presupuesto.id}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error('Error al exportar Excel:', error);
+      alert('Hubo un error al generar el archivo. Verifica que el backend esté encendido.');
+    }
+  }
+
 }

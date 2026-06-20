@@ -95,6 +95,22 @@ export class PresupuestosComponent implements OnInit {
       }
   }
 
+  agregarItemEdicion() {
+    this.itemsEdicion.push({ 
+      id: null, // <--- Es vital que vaya null para que Python sepa que es nuevo
+      descripcion: '', 
+      cantidad: 1, 
+      precio_unitario: 0.00 
+    });
+    
+    // Focus automático (opcional pero elegante)
+    setTimeout(() => {
+      const nuevoIndice = this.itemsEdicion.length - 1;
+      const nuevoElemento = document.getElementById('desc_edit_' + nuevoIndice);
+      if (nuevoElemento) nuevoElemento.focus();
+    }, 0);
+  }
+
   // MAGIA DEL BUSCADOR: Filtra la tabla en tiempo real
   get presupuestosFiltrados() {
     if (!this.searchTerm) return this.listaPresupuestos;
@@ -169,7 +185,7 @@ export class PresupuestosComponent implements OnInit {
     const payload = {
       nro_cotizacion: this.presupuestoSeleccionado.numero_cotizacion,
       items: this.itemsEdicion.map(item => ({
-        id: item.id,
+        id: item.id || null, // <--- Si no tiene ID, manda null
         descripcion_original: item.descripcion,
         cantidad: Number(item.cantidad) || 0,
         precio_unitario: Number(item.precio_unitario) || 0

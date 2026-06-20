@@ -11,9 +11,10 @@ export class PresupuestosService {
   constructor(private http: HttpClient) { }
 
   // 1. Fase de Análisis (Solo IA)
-  analizarExcel(archivo: File, token: string): Observable<any> {
+  analizarExcel(archivo: File, token: string, moneda: string): Observable<any> {
     const formData = new FormData();
     formData.append('archivo', archivo);
+    formData.append('moneda', moneda); // <--- LA MAGIA: Metemos la moneda en el paquete para Python
 
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`

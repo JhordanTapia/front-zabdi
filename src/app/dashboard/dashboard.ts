@@ -11,13 +11,20 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, FormsModule, RouterModule], // <-- Lo agregamos aquí
   templateUrl: './dashboard.html',
 })
+
 export class DashboardComponent implements OnInit {
   procesando = false; 
+  monedaSubida = 'PEN';
   
   // --- ESTADOS DE LOS MODALES ---
   showModalPreview = false;
   showModalPassword = false;
   isEditing = false;
+  
+  // --- CONTROL DEL TOAST ---
+  showToast = false;
+  mensajeToast = '';
+  esErrorToast = false;
   
   // --- DATOS ---
   datosExtraidos: any = null;
@@ -62,19 +69,18 @@ export class DashboardComponent implements OnInit {
       this.procesando = true;
       const token = localStorage.getItem('token_naval') || '';
       
-      this.presupuestosService.analizarExcel(archivo, token).subscribe({
+      // Magia: Le mandamos la moneda al servicio
+      this.presupuestosService.analizarExcel(archivo, token, this.monedaSubida).subscribe({
         next: (respuesta: any) => {
           this.procesando = false;
-          // Guardamos el JSON de la IA y abrimos el modal grande
           this.datosExtraidos = respuesta.data;
           this.showModalPreview = true;
-          // Reseteamos el input file para que permita subir el mismo archivo si se cancela
           event.target.value = '';
         },
-        error: (err: any) => { // <-- Corregido con tipo any para evitar errores en Tauri
+        error: (err: any) => {
           this.procesando = false;
           console.error('Error:', err);
-          alert('Error analizando el documento. Revisa la consola.');
+          this.mostrarToast('Error analizando el documento. Revisa la consola.', true);
         }
       });
     }
@@ -99,9 +105,10 @@ export class DashboardComponent implements OnInit {
   }
 
   // 2. Cuando el usuario pone su clave y le da a Confirmar
+  // 2. Cuando el usuario pone su clave y le da a Confirmar
   confirmarYGuardar() {
     if (!this.passwordConfirmacion) {
-      alert("Debes ingresar tu contraseña para continuar.");
+      this.mostrarToast("Debes ingresar tu contraseña para continuar.", true);
       return;
     }
 
@@ -115,20 +122,38 @@ export class DashboardComponent implements OnInit {
 
     this.presupuestosService.guardarConfirmado(payload, token).subscribe({
       next: (res: any) => {
-        alert('¡ÉXITO! 🚀\n' + res.mensaje);
+        this.mostrarToast('¡Presupuesto guardado con éxito!');
         this.cerrarModales();
-        this.cargarPresupuestos(); // <-- NUEVO: Refrescamos la tabla automáticamente tras guardar
+        this.cargarPresupuestos(); // Refrescamos la tabla automáticamente tras guardar
       },
-      error: (err: any) => { // <-- Corregido con tipo any para evitar errores en Tauri
+      error: (err: any) => {
         console.error('Error al guardar:', err);
         // Si es 401, es contraseña incorrecta
         if (err.status === 401) {
-          alert('❌ Contraseña incorrecta. Inténtalo de nuevo.');
+          this.mostrarToast('Contraseña incorrecta. Inténtalo de nuevo.', true);
         } else {
-          alert('❌ Error al guardar en la base de datos.');
+          this.mostrarToast('Error al guardar en la base de datos.', true);
         }
       }
     });
+  }
+
+  // --- FUNCIÓN DEL TOAST DINÁMICO ---
+  mostrarToast(mensaje: string, esError: boolean = false) {
+    this.mensajeToast = mensaje;
+    this.esErrorToast = esError;
+    this.showToast = true;
+    
+    // Se esconde solito a los 3.5 segundos
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3500);
+  }
+  
+obtenerSimboloMoneda(moneda: string | undefined): string {
+    if (moneda === 'USD') return '$';
+    if (moneda === 'EUR') return '€';
+    return 'S/'; // PEN por defecto
   }
 
   cerrarSesion() {

@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core'; // <-- Importamos OnInit
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { HttpClient } from '@angular/common/http'; 
-import { Router } from '@angular/router'; // <-- NUEVO: Importamos el Router
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -10,12 +10,26 @@ import { Router } from '@angular/router'; // <-- NUEVO: Importamos el Router
   imports: [CommonModule, FormsModule],
   templateUrl: './login.html', 
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   email = '';
   password = '';
+  recordarme = false; // <-- 1. NUEVA VARIABLE PARA EL CHECKBOX
 
-  // <-- NUEVO: Inyectamos el Router en el constructor
+  // --- CONTROL DEL TOAST ---
+  showToast = false;
+  mensajeToast = '';
+  esErrorToast = false;
+
   constructor(private http: HttpClient, private router: Router) {}
+
+  // <-- 2. AL ABRIR LA APP, REVISAMOS SI DEBEMOS AUTO-COMPLETAR
+  ngOnInit() {
+    const correoGuardado = localStorage.getItem('astillero_correo_guardado');
+    if (correoGuardado) {
+      this.email = correoGuardado;
+      this.recordarme = true;
+    }
+  }
 
   ingresar() {
     const body = {
@@ -25,18 +39,34 @@ export class LoginComponent {
 
     this.http.post('http://127.0.0.1:8000/api/login', body).subscribe({
       next: (respuesta: any) => {
-        console.log('¡Éxito! Python nos devolvió esto:', respuesta);
-        
-        // 1. Guardamos el pase VIP en el bolsillo (localStorage)
+        // Guardamos el token de seguridad
         localStorage.setItem('token_naval', respuesta.access_token);
         
-        // 2. Nos teletransportamos al Dashboard
+        // <-- 3. LA MAGIA DEL CHECKBOX
+        if (this.recordarme) {
+          localStorage.setItem('astillero_correo_guardado', this.email);
+        } else {
+          localStorage.removeItem('astillero_correo_guardado');
+        }
+        
+        // Nos teletransportamos al Dashboard
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
         console.error('Error al loguearse:', error);
-        alert("Credenciales incorrectas, mi king"); // Un aviso chiquito si falla
+        this.mostrarToast("Credenciales incorrectas, mi king. Intenta de nuevo.", true);
       }
     });
+  }
+
+  // --- FUNCIÓN DEL TOAST DINÁMICO ---
+  mostrarToast(mensaje: string, esError: boolean = false) {
+    this.mensajeToast = mensaje;
+    this.esErrorToast = esError;
+    this.showToast = true;
+    
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3500);
   }
 }

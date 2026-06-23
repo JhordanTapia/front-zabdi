@@ -80,7 +80,16 @@ export class DashboardComponent implements OnInit {
         error: (err: any) => {
           this.procesando = false;
           console.error('Error:', err);
-          this.mostrarToast('Error analizando el documento. Revisa la consola.', true);
+          
+          // Capturamos el código de estado 429 (Too Many Requests) enviado desde FastAPI
+          if (err.status === 429) {
+            this.mostrarToast(err.error?.detail, true);
+          } else {
+            this.mostrarToast(err.error?.detail || 'Error analizando el documento. Revisa la consola.', true);
+          }
+          
+          // Limpiamos el input para permitir reintentar con el mismo archivo
+          event.target.value = '';
         }
       });
     }
